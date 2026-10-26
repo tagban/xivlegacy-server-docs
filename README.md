@@ -7,6 +7,8 @@ class test results and known gaps.
 
 **Community:** questions, testing and news on the [XIVLegacy Discord](https://discord.gg/D9k3khqvy8).
 
+**Player reference:** items, quests, monsters, NPCs and leves of 1.23b at the [XIVLegacy Reference](https://tagban.github.io/xivlegacy-reference/).
+
 Our fork is [tagban/Garlemald-Server](https://github.com/tagban/Garlemald-Server). Client-side
 notes (protocol, opcodes, client behavior) live in
 [xivlegacy-client-docs](https://github.com/tagban/xivlegacy-client-docs).
