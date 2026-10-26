@@ -5,6 +5,8 @@ How we run [Garlemald](https://github.com/swstegall/Garlemald-Server), the Rust 
 quests work inside it, the open-world monster data we added, every fix we made and contributed,
 class test results and known gaps.
 
+**Community:** questions, testing and news on the [XIVLegacy Discord](https://discord.gg/D9k3khqvy8).
+
 Our fork is [tagban/Garlemald-Server](https://github.com/tagban/Garlemald-Server). Client-side
 notes (protocol, opcodes, client behavior) live in
 [xivlegacy-client-docs](https://github.com/tagban/xivlegacy-client-docs).
