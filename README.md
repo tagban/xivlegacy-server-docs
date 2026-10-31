@@ -23,7 +23,7 @@ notes (protocol, opcodes, client behavior) live in
 | --- | --- |
 | [Running the server](docs/running.md) | Services and ports, starting and restarting, the database, logs, the GM console |
 | [Events and quests](docs/events-and-quests.md) | Event dispatch, the coroutine scheduler and signals, quest hooks, directors, the opening tutorials |
-| [World monsters](docs/world-monsters.md) | Open-world spawns: sources, coordinate conversion, HP, the generator, the boot pass |
+| [World monsters](docs/world-monsters.md) | Open-world spawns: sources, coordinate conversion, HP, the generator, the boot pass; dungeon monsters and dungeon copies |
 | [Fixes and contributions](docs/fixes.md) | Every fix, with its cause, the upstream pull request or local commit |
 | [Test results](docs/test-results.md) | The per-class matrix from driving the real client |
 | [Known gaps](docs/known-gaps.md) | What's missing or approximate |

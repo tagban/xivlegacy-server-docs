@@ -89,3 +89,95 @@ the shipped `*Standard` monster scripts return the same tuple. That fix is
 
 About 380 entries, where no client actor class with an appearance row was found: snurbles,
 phurbles, hippocerfs, several Ixali, bandits.
+
+## Dungeon monsters
+
+The four 1.0 dungeons had no monsters at all. Seed `130_dungeon_monsters.sql` adds **456 monsters
+in 42 groups**. Nothing spawns with the zone: every run is a copy of its own (see
+[Dungeon copies](#dungeon-copies)), and its monsters spawn into that copy.
+
+| Dungeon | Zone | Monsters | Levels |
+| --- | --- | --- | --- |
+| The Thousand Maws of Toto-Rak | 159 | 138 | 35–39 |
+| Dzemael Darkhold | 231 | 140 | 52 |
+| The Aurum Vale | 245 | 91 | 52–56 |
+| Cutter's Cry | 246 | 87 | 50–56 |
+
+### Where the positions come from
+
+Caladius shared placement sheets with us, from a project that never got started: for each spawn, a map id, the
+monster's name and a pixel on that map. The client's own map sheet turns pixels into world
+positions:
+
+- `data/01/03/05/12.DAT` has 72-byte rows of 18 int32. Fields 3 and 4 are the map's x and z
+  offsets, field 5 its scale (pixels per yalm), field 6 the map id. Row ids come from the
+  (first, count) pairs in `01/03/05/13.DAT`.
+- `pixel = (world + offset) × scale`, so `world = pixel / scale − offset`. Z points south, the same
+  way as the map's y.
+- Every dungeon map is 2560×2048 pixels at scale 2 (half a yalm per pixel). Field maps use scale 1;
+  other small maps use 4 or 8.
+- `data/01/03/03/61.DAT` maps a map id to its texture group. The map is 80 tiles, files
+  `0xGGGG0000` to `0xGGGG004F`, 10 wide, each a 256×256 DXT1 GTEX.
+
+| Map | Dungeon | x offset | z offset |
+| --- | --- | --- | --- |
+| 1161, 1163, 1165, 1167 | Cutter's Cry | 1792, 1824, 1952, 2080 | 2144, 2112, 2272, 2368 |
+| 1241 | Toto-Rak | −544 | −224 |
+| 1321, 1331 | Dzemael Darkhold, upper and lower | 560, 736 | 384, 593 |
+| 1341, 1343, 1345 | The Aurum Vale | 1328, 1648, 1488 | −768, −800, −1072 |
+
+Drawn back onto the decoded maps, every known door and barrier, and every spawn, lands in a
+corridor or room. Each spawn has to use its own map's offsets: a dungeon's floors differ.
+
+The same sheet covers every map in the game, so it can also replace the fitted region offsets
+above.
+
+### Heights, levels and classes
+
+- **Heights** were read in the test client: one probe per cluster of spawns within 4 yalms.
+- **Levels and aggression** come from Gamer Escape's 1.x pages. A few kinds missing there take
+  the level of a like kind in the same dungeon. HP carries the curve above on: 1825 × 1.0577^(level − 40), so about 1,400 at 35 and 4,500 at 56.
+- **Classes, names and looks** are the client's own dungeon entries (the 32xxxxx and 33xxxxx
+  name ids), all `*Standard` monster scripts.
+- **Left out:** nine Dzemael spawns the sheet names only "Unknown", and two Aurum Vale Imperial
+  Hoplomachus spots whose height could not be read.
+- **Not retail yet:** bosses, chests, the doors and their gimmicks, the time limit and the party
+  size are still to do. The dungeons' barrier and door actors spawn with the open zone, so they
+  don't show inside a copy. Still to do as well are the Aurum Vale's
+  hazards: its yellow goldbile pools give a brief poison-like effect (possibly Bio), its gas
+  rooms inflict Gold Lung, and its first boss stacks an effect that at three or more stacks you
+  had to clear by grabbing a special remedy.
+
+Cutter's Cry had an empty zone row (no zone name or class). The map sheet gives it area 415 in
+region 104, following Nanawa (412, `wil0Dungeon02`) and Copperbell (414, `wil0Dungeon04`), so the
+seed names it `wil0Dungeon05`.
+
+### Dungeon copies
+
+Each run is a copy of the dungeon for a party or a solo player. Two parties in Toto-Rak at once
+each see only their own monsters, and party members inside one copy see each other.
+
+- **Entering:** `!dungeon <totorak|dzemael|aurum|cutters>` (GM level 2 by default). It runs
+  `scripts/lua/dungeon.lua`, which creates the copy in the dungeon's zone, spawns the dungeon's
+  monsters into it, and brings in the typer's party members who are in the same zone. Retail
+  queued players through NPCs by each entrance (Toto-Rak's was Bloisirant in the South Shroud);
+  those aren't scripted yet.
+- **Leaving:** `!dungeon leave` puts you at the nearest camp's aetherial gate. Logging out
+  inside also leaves. The copy goes on with whoever is still inside, and it ends with the last
+  one out.
+- **Directors:** the client's own for each dungeon, `InstanceRaid/InstanceRaidAurumVale`,
+  `InstanceRaid/InstanceRaidCuttersCry`, `Occupancy/RaidFst0Dungeon03` (Toto-Rak) and
+  `Occupancy/RaidRoc0Dungeon01` (Dzemael).
+
+How copies work in the map server (`content_instance.rs`):
+
+- A copy gets a unique id and one of 32 slots in its zone. The slot is folded into its actors'
+  numbers, so two copies never share an actor id. Content scripts' battle npc ids must stay
+  under 4096 for that.
+- Every actor and player carries its copy's id in the zone core, and "who is near me" only pairs
+  actors of the same copy. That one check keeps streaming, broadcasts, chat, aggro and area
+  attacks inside the copy. The open zone is copy 0.
+- `DoZoneChangeContentParty` brings the party along; `DoZoneChangeContent` stays solo, which is
+  what quest duties use. The content's hooks run once, on the owner's session.
+- `player:LeaveContent()`: a member just leaves. The owner hands the copy to a member still
+  inside, or the copy ends.
