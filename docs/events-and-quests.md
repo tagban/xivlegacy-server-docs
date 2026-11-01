@@ -73,6 +73,22 @@ The opening quests (`man0l0` Limsa, `man0g0` Gridania, `man0u0` Ul'dah) drive th
 - **The ending:** music, then `processEvent020_1` (closing cutscene and item dialog), the next
   quest sequence, `ContentFinished`, and a warp into the city.
 
+## Quest duties
+
+Many Grand Company quests start a fight right where the player stands (an in-place duty) or in a
+content copy of another zone.
+
+- **In-place duties:** the director's entry `KickEvent(…, "noticeEvent")` raises the client's Now
+  Loading veil even when there is no warp. Without the next step you get a dim screen, a spinner
+  and a grey hotbar, and NPCs won't talk until you relog. To clear the veil, call
+  `callClientFunction(player, "delegateEvent", player, quest, "questBaseRewardSeting")` in the
+  director's `onEventStarted`, before its entry `EndEvent`. Every new in-place director needs this
+  call.
+- **Warps into another zone's content copy** (`DoZoneChangeContent*`) need spawn type 15. With
+  0x10, the type that same-map duty warps use, the client stays on Now Loading.
+- **Push triggers** fire only when the player walks across the circle's edge, never when they
+  are warped inside one. Placement notes are on [NPC and quest placement](npc-placements.md).
+
 ## Player snapshots
 
 Scripts see the player through a snapshot built when the hook runs. Several snapshots were built

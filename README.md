@@ -22,8 +22,9 @@ notes (protocol, opcodes, client behavior) live in
 | Page | What it covers |
 | --- | --- |
 | [Running the server](docs/running.md) | Services and ports, starting and restarting, the database, logs, the GM console |
-| [Events and quests](docs/events-and-quests.md) | Event dispatch, the coroutine scheduler and signals, quest hooks, directors, the opening tutorials |
+| [Events and quests](docs/events-and-quests.md) | Event dispatch, the coroutine scheduler and signals, quest hooks, directors, the opening tutorials, quest duties |
 | [World monsters](docs/world-monsters.md) | Open-world spawns: sources, coordinate conversion, HP, the generator, the boot pass; dungeon monsters and dungeon copies |
+| [NPC and quest placement](docs/npc-placements.md) | How quest NPCs, triggers and fights are placed and given heights; coordinate frames, sources, pitfalls; the generated [placement data](docs/npc-placements-data.md) |
 | [Fixes and contributions](docs/fixes.md) | Every fix, with its cause, the upstream pull request or local commit |
 | [Test results](docs/test-results.md) | The per-class matrix from driving the real client |
 | [Known gaps](docs/known-gaps.md) | What's missing or approximate |

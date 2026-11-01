@@ -8,7 +8,7 @@
 - **Monster stats are placeholders.** HP follows the retail curve; attack, defense and the rest
   use level-scaled fallbacks. See [World monsters](world-monsters.md).
 - **About 380 monster entries are skipped** for lack of a client actor class with an appearance.
-- **No terrain heights.** Monsters away from known positions can float or sink.
+- **No terrain heights.** Monsters away from known positions can float or sink, and every NPC height is set by hand (see [NPC and quest placement](npc-placements.md)).
 
 ## Streaming
 
