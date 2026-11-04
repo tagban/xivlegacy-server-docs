@@ -8,16 +8,21 @@
 - **Monster stats are placeholders.** HP follows the retail curve; attack, defense and the rest
   use level-scaled fallbacks. See [World monsters](world-monsters.md).
 - **About 380 monster entries are skipped** for lack of a client actor class with an appearance.
-- **No terrain heights.** Monsters away from known positions can float or sink, and every NPC height is set by hand (see [NPC and quest placement](npc-placements.md)).
 
-## Streaming
+## Combat
 
-- **50-yalm radius, add-only.**
-  - `send_instance_update` only sends actors within 50 yalms, and never removes ones the player
-    walks away from.
-  - NPCs and monsters pop in late (the Gridania chocobo lender appears only up close), and fields
-    look sparse at a distance.
-  - A larger radius needs despawn-on-distance first, or the client's actor table fills up.
+How each combat formula works, and where its numbers came from, is in
+[Combat formulas](https://github.com/tagban/xivlegacy-server/blob/develop/docs/combat.md)
+in the server repository. What isn't modeled yet:
+
+- **Accuracy, evasion and potency count only what status effects add.** DEX, MND, PIE and gear
+  don't change hit, resist or spell size yet, and monsters have none of their own.
+- **Player stats are placeholders** (`8 + 2 × level`), since the real 1.x growth curves were never
+  reversed.
+- **No knockback, no ammo use.** Tempered Will does nothing, and Refill has nothing to refill.
+- **Cover, Collusion and Divine Veil's party Regen are partial.** Effect scripts can't reach the
+  party or enmity lists yet.
+- **Effects kept across a relog restart their full duration.**
 
 ## Tutorials
 
