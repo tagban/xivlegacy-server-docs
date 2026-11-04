@@ -22,7 +22,6 @@ in the server repository. What isn't modeled yet:
 - **No knockback, no ammo use.** Tempered Will does nothing, and Refill has nothing to refill.
 - **Cover, Collusion and Divine Veil's party Regen are partial.** Effect scripts can't reach the
   party or enmity lists yet.
-- **Effects kept across a relog restart their full duration.**
 
 ## Tutorials
 
