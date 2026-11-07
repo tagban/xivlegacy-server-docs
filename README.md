@@ -17,6 +17,22 @@ notes (protocol, opcodes, client behavior) live in
 
 > Not affiliated with Square Enix. FINAL FANTASY XIV is a registered trademark of Square Enix Holdings Co., Ltd.
 
+## Server status
+
+**Live status:** [tagban.github.io/xivlegacy-server-docs](https://tagban.github.io/xivlegacy-server-docs/): is `xiv.ffxi.cc` up, who's online, uptime and the last 7 days.
+
+The [server-status workflow](.github/workflows/server-status.yml) runs every 30 minutes from GitHub. It runs
+[`tools/server_status.py`](tools/server_status.py), which checks the server from outside (its public `/status` page on 54993 and the
+lobby and world ports). Then it:
+
+- publishes the [status page](status-page/index.html) and its `status.json` / `history.json` on GitHub Pages
+  (30 days of history are kept on the `status-data` branch, so `main` gets no commit per run);
+- posts to Discord when the `DISCORD_WEBHOOK_URL` secret is set (a channel webhook): a roll call of who's online,
+  every run while someone is on, and a message when the server goes down or comes back;
+- feeds the [status box](status-page/moghouse-widget.html) for moghouse.cc or any site: paste it into a WordPress "Custom HTML" block.
+
+Run it by hand from the Actions tab (**Server status**, Run workflow).
+
 ## Contents
 
 | Page | What it covers |
