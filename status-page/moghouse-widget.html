@@ -1,0 +1,34 @@
+<!--
+  XIVLegacy status box for moghouse.cc (or any site).
+  WordPress: add a "Custom HTML" block and paste everything below this comment.
+  It reads https://tagban.github.io/xivlegacy-server-docs/status.json, which the
+  server-status workflow updates every 30 minutes.
+-->
+<div id="xivl-status" style="font:14px/1.45 system-ui,sans-serif;background:#0e0d25;color:#cfc69c;border:1px solid #33436d;border-radius:6px;padding:12px 14px;max-width:360px">
+  <div style="display:flex;align-items:center;gap:10px">
+    <span id="xivl-dot" style="width:12px;height:12px;border-radius:50%;background:#9a94b8;flex:none"></span>
+    <strong id="xivl-head">XIVLegacy: checking…</strong>
+  </div>
+  <div id="xivl-body" style="margin-top:6px;color:#9a94b8;font-size:13px"></div>
+  <div style="margin-top:8px;font-size:12px">
+    <a href="https://tagban.github.io/xivlegacy-server-docs/" style="color:#dac837">Full status</a> ·
+    <a href="https://discord.gg/D9k3khqvy8" style="color:#dac837">Discord</a>
+  </div>
+</div>
+<script>
+(function () {
+  var URL = "https://tagban.github.io/xivlegacy-server-docs/status.json";
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  fetch(URL, { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (s) {
+    document.getElementById("xivl-dot").style.background = s.up ? "#68bf94" : "#e0675f";
+    document.getElementById("xivl-head").textContent = "XIVLegacy (" + s.world + ") is " + (s.up ? "up" : "down");
+    var names = s.online.map(function (p) { return esc(p.name); }).join(", ");
+    var mins = Math.round((Date.now() - Date.parse(s.checked)) / 60000);
+    document.getElementById("xivl-body").innerHTML =
+      (s.up ? "<b style='color:#cfc69c'>" + s.players_online + "</b> online" + (names ? ": " + names : "") : esc(s.error || "Not answering")) +
+      "<br>Uptime 7 days: " + (s.uptime_7d == null ? "–" : s.uptime_7d + "%") + " · checked " + mins + " min ago";
+  }).catch(function () {
+    document.getElementById("xivl-head").textContent = "XIVLegacy status unavailable";
+  });
+})();
+</script>
