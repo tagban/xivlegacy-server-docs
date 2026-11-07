@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XIVLegacy Server Status</title>
+<meta name="description" content="Is the XIVLegacy FINAL FANTASY XIV 1.23b server up, and who is online. Checked every 30 minutes.">
+<style>
+  /* Colors from the 1.23b client UI. */
+  :root {
+    --panel: #0e0d25; --panel2: #181846; --frame: #33436d; --select: #2a658c;
+    --cream: #cfc69c; --muted: #9a94b8; --up: #68bf94; --down: #e0675f; --gold: #dac837;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: radial-gradient(ellipse at top, var(--panel2), var(--panel) 70%) fixed;
+    color: var(--cream); font: 15px/1.5 "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+    padding: 32px max(16px, env(safe-area-inset-right)) 48px max(16px, env(safe-area-inset-left));
+    min-height: 100vh;
+  }
+  main { max-width: 760px; margin: 0 auto; display: grid; gap: 18px; }
+  h1 { margin: 0; font-size: 1.6rem; letter-spacing: .02em; text-wrap: balance; }
+  .sub { color: var(--muted); margin: 2px 0 0; }
+  .card {
+    background: rgba(14, 13, 37, .85); border: 1px solid var(--frame); border-radius: 6px;
+    padding: 18px 20px; box-shadow: inset 0 1px 0 rgba(207, 198, 156, .08);
+  }
+  .state { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .dot { width: 18px; height: 18px; border-radius: 50%; background: var(--muted); flex: none; }
+  .up .dot { background: var(--up); box-shadow: 0 0 12px var(--up); }
+  .down .dot { background: var(--down); box-shadow: 0 0 12px var(--down); }
+  .state b { font-size: 1.35rem; }
+  .meta { color: var(--muted); font-size: .9rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .stat { background: var(--panel2); border: 1px solid var(--frame); border-radius: 4px; padding: 10px 12px; }
+  .stat .k { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .stat .v { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+  h2 { margin: 0 0 10px; font-size: 1rem; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); }
+  ul.names { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  ul.names li { background: var(--select); border-radius: 3px; padding: 3px 10px; }
+  ul.names li span { color: var(--cream); opacity: .75; font-size: .85rem; margin-left: 6px; }
+  .empty { color: var(--muted); margin: 0; }
+  .chart { overflow-x: auto; }
+  svg { display: block; width: 100%; height: 120px; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: .8rem; color: var(--muted); margin-top: 6px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  .svc { display: flex; gap: 14px; flex-wrap: wrap; font-size: .9rem; }
+  .svc span::before { content: "●"; margin-right: 5px; }
+  .svc .ok::before { color: var(--up); } .svc .bad::before { color: var(--down); }
+  footer { color: var(--muted); font-size: .85rem; text-align: center; }
+  a { color: var(--gold); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>XIVLegacy Server Status</h1>
+    <p class="sub">FINAL FANTASY XIV 1.23b at <code>xiv.ffxi.cc</code>. Checked from outside every 30 minutes.</p>
+  </header>
+
+  <section class="card state" id="state">
+    <div class="dot"></div>
+    <div><b id="headline">Checking…</b><div class="meta" id="since"></div></div>
+  </section>
+
+  <section class="grid">
+    <div class="stat"><div class="k">Online now</div><div class="v" id="count">–</div></div>
+    <div class="stat"><div class="k">Peak today (UTC)</div><div class="v" id="peak">–</div></div>
+    <div class="stat"><div class="k">Uptime 24 h</div><div class="v" id="u24">–</div></div>
+    <div class="stat"><div class="k">Uptime 7 days</div><div class="v" id="u7">–</div></div>
+  </section>
+
+  <section class="card">
+    <h2>Who's online</h2>
+    <ul class="names" id="names"></ul>
+    <p class="empty" id="nobody" hidden>Nobody is online right now.</p>
+  </section>
+
+  <section class="card">
+    <h2>Last 7 days</h2>
+    <div class="chart"><svg id="chart" viewBox="0 0 700 120" preserveAspectRatio="none" role="img" aria-label="Players online and downtime over the last 7 days"></svg></div>
+    <div class="legend"><span><i style="background:var(--select)"></i>Players online</span><span><i style="background:var(--down)"></i>Server down</span></div>
+  </section>
+
+  <section class="card">
+    <h2>Services</h2>
+    <div class="svc" id="svc"></div>
+    <p class="meta" id="checked" style="margin:.6em 0 0"></p>
+  </section>
+
+  <footer>
+    Join us on the <a href="https://discord.gg/D9k3khqvy8">XIVLegacy Discord</a> ·
+    <a href="https://github.com/tagban/xivlegacy-server-docs">Server docs</a> ·
+    <a href="https://tagban.github.io/xivlegacy-reference/">Player reference</a><br>
+    A passion project. If you enjoy old Eorzea, play FINAL FANTASY XIV today: it has a
+    <a href="https://freetrial.finalfantasyxiv.com/">free trial</a>.
+    Not affiliated with Square Enix.
+  </footer>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const fmtAgo = iso => {
+  const m = Math.round((Date.now() - Date.parse(iso)) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return m + " min ago";
+  const h = Math.floor(m / 60);
+  if (h < 48) return h + " h ago";
+  return Math.floor(h / 24) + " days ago";
+};
+const local = iso => new Date(iso).toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+
+function drawChart(history) {
+  const svg = $("chart"), W = 700, H = 120, now = Date.now(), span = 7 * 864e5;
+  const pts = history.filter(h => now - Date.parse(h.t) <= span);
+  const max = Math.max(1, ...pts.map(h => h.players));
+  const x = t => ((Date.parse(t) - (now - span)) / span) * W;
+  const slot = W / (7 * 48);
+  let out = "";
+  for (const h of pts) {
+    if (!h.up) { out += `<rect x="${x(h.t).toFixed(1)}" y="0" width="${slot.toFixed(1)}" height="${H}" fill="var(--down)" opacity=".45"/>`; continue; }
+    const bh = (h.players / max) * (H - 14);
+    if (bh > 0) out += `<rect x="${x(h.t).toFixed(1)}" y="${(H - bh).toFixed(1)}" width="${Math.max(slot, 1.5).toFixed(1)}" height="${bh.toFixed(1)}" fill="var(--select)"/>`;
+  }
+  out += `<text x="4" y="11" fill="var(--muted)" font-size="10">${max} max</text>`;
+  svg.innerHTML = out || `<text x="4" y="60" fill="var(--muted)" font-size="12">No history yet</text>`;
+}
+
+async function load() {
+  try {
+    const [s, h] = await Promise.all([
+      fetch("status.json", { cache: "no-store" }).then(r => r.json()),
+      fetch("history.json", { cache: "no-store" }).then(r => r.json()).catch(() => []),
+    ]);
+    $("state").className = "card state " + (s.up ? "up" : "down");
+    $("headline").textContent = `${s.world} is ${s.up ? "up" : "down"}`;
+    $("since").textContent = (s.up ? "Up since " : "Down since ") + local(s.since) + (s.error ? " · " + s.error : "");
+    $("count").textContent = s.players_online;
+    $("peak").textContent = s.peak_today;
+    $("u24").textContent = s.uptime_24h == null ? "–" : s.uptime_24h + "%";
+    $("u7").textContent = s.uptime_7d == null ? "–" : s.uptime_7d + "%";
+    const names = $("names"); names.innerHTML = "";
+    for (const p of s.online) {
+      const li = document.createElement("li"); li.textContent = p.name;
+      if (p.city) { const c = document.createElement("span"); c.textContent = p.city; li.append(c); }
+      names.append(li);
+    }
+    $("nobody").hidden = s.online.length > 0 || s.players_online > 0;
+    $("svc").innerHTML = [["web", "Login (54993)"], ["lobby", "Lobby (54994)"], ["world", "World (54992)"]]
+      .map(([k, n]) => `<span class="${s.services[k] ? "ok" : "bad"}">${n}</span>`).join("");
+    $("checked").textContent = "Last checked " + fmtAgo(s.checked) + " (" + local(s.checked) + ").";
+    drawChart(h);
+  } catch (e) {
+    $("headline").textContent = "Status unavailable";
+    $("since").textContent = "The status file couldn't be loaded.";
+  }
+}
+load();
+setInterval(load, 5 * 60 * 1000);
+</script>
+</body>
+</html>
